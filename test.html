@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>Scientific Calculator fx-991EX Clone</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/12.4.1/math.js"></script>
+    <style>
+        :root {
+            --bg-color: #1c1c1c;
+            --text-color: white;
+            --button-bg: #444;
+            --button-hover: #666;
+            --display-bg: #111;
+            --highlight: #00aaff;
+        }
+
+        body.light-mode {
+            --bg-color: #f4f4f4;
+            --text-color: #000;
+            --button-bg: #ddd;
+            --button-hover: #ccc;
+            --display-bg: #fff;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            justify-content: center;
+            padding-top: 20px;
+            margin: 0;
+            transition: background 0.3s, color 0.3s;
+        }
+
+        .calculator {
+            width: 380px;
+            background: var(--button-bg);
+            border-radius: 10px;
+            padding: 15px;
+            box-sizing: border-box;
+        }
+
+        .tabs {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 10px;
+        }
+
+        .tabs button {
+            flex: 1;
+            padding: 8px;
+            background: var(--button-bg);
+            border: none;
+            border-radius: 5px 5px 0 0;
+            color: var(--text-color);
+            cursor: pointer;
+        }
+
+        .tabs button:hover {
+            background: var(--button-hover);
+        }
+
+        .tabs button.active {
+            background: var(--highlight);
+        }
+
+        .tab-content {
+            display: none;
+            padding: 10px 0;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        #display {
+            width: 100%;
+            font-size: 20px;
+            margin-bottom: 10px;
+            padding: 8px;
+            text-align: right;
+            border-radius: 5px;
+            background: var(--display-bg);
+            color: lime;
+            border: none;
+            box-sizing: border-box;
+        }
+
+        .buttons.math-buttons,
+        .buttons.scientific-buttons {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+        }
+
+        button {
+            padding: 12px;
+            font-size: 16px;
+            border: none;
+            border-radius: 8px;
+            background-color: var(--button-bg);
+            color: var(--text-color);
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        button:hover {
+            background-color: var(--button-hover);
+        }
+
+        .topbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            font-size: 14px;
+            gap: 8px;
+        }
+
+        .history {
+            background: #101010;
+            padding: 6px;
+            font-size: 13px;
+            border-radius: 8px;
+            margin-top: 15px;
+            max-height: 100px;
+            overflow-y: auto;
+            user-select: text;
+        }
+
+        hr {
+            border-color: #555;
+            margin: 15px 0;
+            border-width: 1px 0 0 0;
+            border-style: solid;
+        }
+
+        .buttons.math-buttons button:nth-child(18) {
+            grid-column: span 2;
+            font-weight: bold;
+            font-size: 18px;
+            background-color: var(--highlight);
+            color: white;
+        }
+
+        .buttons.math-buttons button:nth-child(18):hover {
+            background-color: #0088cc;
+        }
+
+        .mode-indicator {
+            font-size: 12px;
+            opacity: 0.8;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="calculator">
+    <!-- Tabs -->
+    <div class="tabs">
+        <button class="tab-btn active" onclick="openTab('math', event)">Math</button>
+        <button class="tab-btn" onclick="openTab('matrix', event)">Matrix</button>
+        <button class="tab-btn" onclick="openTab('complex', event)">Complex</button>
+        <button class="tab-btn" onclick="openTab('stats', event)">Stats</button>
+    </div>
+
+    <!-- Math Tab -->
+    <div id="math" class="tab-content active">
+        <div class="topbar">
+            <label><input type="checkbox" id="angleToggle" checked onchange="updateMode()"> Degree</label>
+            <span class="mode-indicator" id="modeLabel">[DEG]</span>
+            <label><input type="checkbox" id="themeToggle" onchange="toggleTheme()"> Dark Mode</label>
+            <div class="ctrl-buttons">
+                <button onclick="clearDisplay()">C</button>
+                <button onclick="backspace()">⌫</button>
+            </div>
+        </div>
+
+        <input type="text" id="display" disabled />
+
+        <div class="buttons scientific-buttons">
+            <button onclick="append('sqrt(')">√</button>
+            <button onclick="append('^')">^</button>
+            <button onclick="append('sin(')">sin</button>
+            <button onclick="append('cos(')">cos</button>
+            <button onclick="append('tan(')">tan</button>
+            <button onclick="append('log10(')">log</button>
+            <button onclick="append('ln(')">ln</button>
+            <button onclick="append('(')">(</button>
+            <button onclick="append(')')">)</button>
+        </div>
+
+        <hr />
+
+        <div class="buttons math-buttons">
+            <button onclick="append('7')">7</button>
+            <button onclick="append('8')">8</button>
+            <button onclick="append('9')">9</button>
+            <button onclick="append('/')">÷</button>
+
+            <button onclick="append('4')">4</button>
+            <button onclick="append('5')">5</button>
+            <button onclick="append('6')">6</button>
+            <button onclick="append('*')">×</button>
+
+            <button onclick="append('1')">1</button>
+            <button onclick="append('2')">2</button>
+            <button onclick="append('3')">3</button>
+            <button onclick="append('-')">−</button>
+
+            <button onclick="append('0')">0</button>
+            <button onclick="append('.')">.</button>
+            <button onclick="append('+')">+</button>
+            <button onclick="append('pi')">π</button>
+            <button onclick="append('e')">e</button>
+            <button onclick="calculate()">=</button>
+        </div>
+
+        <div class="history" id="historyBox"><strong>History:</strong></div>
+    </div>
+
+    <!-- Other Tabs -->
+    <div id="matrix" class="tab-content"><p>Matrix features coming next...</p></div>
+    <div id="complex" class="tab-content"><p>Complex number support coming soon...</p></div>
+    <div id="stats" class="tab-content"><p>Statistical functions coming soon...</p></div>
+</div>
+
+<script>
+    const display = document.getElementById("display");
+    const historyBox = document.getElementById("historyBox");
+    const degToggle = document.getElementById("angleToggle");
+    const modeLabel = document.getElementById("modeLabel");
+    let lastClearTime = 0;
+
+    function append(val) {
+        display.value += val;
+    }
+
+    function clearDisplay() {
+        const now = Date.now();
+        if (now - lastClearTime < 800) {
+            historyBox.innerHTML = "<strong>History:</strong>";
+        }
+        display.value = "";
+        lastClearTime = now;
+    }
+
+    function backspace() {
+        display.value = display.value.slice(0, -1);
+    }
+
+    function calculate() {
+        let expr = display.value;
+        try {
+            if (degToggle.checked) {
+                expr = expr.replace(/(sin|cos|tan)\(([^)]+)\)/g, (_, fn, x) => `${fn}(${x} deg)`);
+            }
+            const result = math.evaluate(expr);
+            historyBox.innerHTML += `<div>${expr} = ${result}</div>`;
+            display.value = result;
+            historyBox.scrollTop = historyBox.scrollHeight;
+        } catch {
+            display.value = "Error";
+        }
+    }
+
+    function openTab(tabId, event) {
+        document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+        document.getElementById(tabId).classList.add('active');
+        event.target.classList.add('active');
+    }
+
+    function updateMode() {
+        modeLabel.textContent = degToggle.checked ? "[DEG]" : "[RAD]";
+    }
+
+    function toggleTheme() {
+        document.body.classList.toggle("light-mode");
+    }
+
+    document.addEventListener("keydown", (e) => {
+        if (!isNaN(e.key) || "+-*/().".includes(e.key)) {
+            append(e.key);
+        } else if (e.key === "Enter") {
+            e.preventDefault();
+            calculate();
+        } else if (e.key === "Backspace") {
+            backspace();
+        } else if (e.key.toLowerCase() === "c") {
+            clearDisplay();
+        }
+    });
+</script>
+</body>
+</html>
